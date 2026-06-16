@@ -25,30 +25,25 @@ This project strictly follows the **Model-View-Controller (MVC)** architectural 
 3. **Duplicate Prevention (File Hashing):** System hashes uploaded files (MD5/SHA) to check Prisma DB for existing analysis before sending to the Python engine to save compute costs.
 4. **Analysis Dashboard:** Visual representation of R-Squared, P-Values, and other statistical metrics.
 
-## 📂 Folder Structure (Next.js App Router with MVC)
+## 📂 Folder Structure (Next.js App Router Native)
 correlab/
 ├── prisma/
-│   └── schema.prisma        # (MODEL) Database models & relations
+│   └── schema.prisma        # Database models & relations
 ├── public/                  # Static assets, SVG icons from Figma
 ├── src/
-│   ├── app/                 # (ROUTER) Next.js App Router (Thin wrappers)
-│   │   ├── api/             # API routes
+│   ├── actions/             # Next.js Server Actions (Mutations & DB logic)
+│   ├── app/                 # Next.js App Router (UI Routes & API Handlers)
+│   │   ├── api/             # External API webhooks/endpoints
+│   │   ├── (auth)/          # Authentication routes
+│   │   ├── (dashboard)/     # Main dashboard application routes
 │   │   ├── globals.css      # Global Tailwind styles
 │   │   └── layout.tsx       # Root layout
-│   ├── models/              # (MODEL) Database instances & types
-│   │   └── PrismaClient.ts  # Prisma Client singleton
-│   ├── views/               # (VIEW) React Components and Pages
-│   │   ├── auth/            # Auth-related views
-│   │   ├── dashboard/       # Dashboard views
-│   │   ├── profile/         # Profile views
-│   │   ├── history/         # History views
-│   │   └── analysis/        # Analysis views
-│   ├── controllers/         # (CONTROLLER) Business Logic & Server Actions
-│   │   ├── AnalysisController.ts
-│   │   └── WebhookController.ts
 │   ├── components/          # Reusable UI Components
 │   │   ├── AppShell.tsx     # Main application wrapper/layout
 │   │   └── ui/              # Buttons, Cards, Inputs
+│   ├── lib/                 # Utilities and Configurations
+│   │   ├── prisma.ts        # Prisma Client singleton instantiation
+│   │   └── utils.ts         # Helper functions (e.g., file hashing)
 │   └── types/               # Global TypeScript Interfaces
 
 ## 🔄 Core Data Flow (Analysis Process)
