@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -21,14 +21,8 @@ export default function AppShell({ children }: AppShellProps) {
             {/* Logo/Title space if needed */}
           </div>
           <div className="flex items-center gap-lg">
-            <Link href="/profile" className="relative h-8 w-8 overflow-hidden rounded-full border border-outline-variant bg-surface-variant block cursor-pointer transition-transform hover:scale-105">
-              <Image
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4twhYW4wD_CzUZcp-FhSEHNbrptf7-kFvdUtKtQ_o0iOlRgQxySMaOzKIQzDvaGEcnrZ5sslW1Qyl3w2M4oYPCKs0tcKIT1wGZU5pxxODJocmk19oKhK5Zh-LubdXFciqvp_GzvO_h9hbYh78ALHtggclFrXFo2MyRQBT0deK3clSEA7X71H2K_KTi0DE-RkrqYdkm_5He3s0AZLiGTeMs4Wb-OpkS-xTTyPOYoD5MygPY4GKCJrc1ivWQ9Fzs8rK1eb4NF0W7R8q"
-                alt="User profile"
-                fill
-                className="object-cover"
-                unoptimized
-              />
+            <Link href="/profile" className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-primary-container text-on-primary-container font-semibold cursor-pointer transition-transform hover:scale-105">
+              U
             </Link>
           </div>
         </header>
