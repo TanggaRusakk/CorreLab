@@ -18,15 +18,7 @@ export default function AppShell({ children }: AppShellProps) {
         {/* TopNavBar */}
         <header className="fixed right-0 top-0 z-10 flex h-16 w-[calc(100%-260px)] items-center justify-between border-b border-outline-variant bg-surface px-lg">
           <div className="flex items-center gap-md font-headline-md text-headline-md text-primary">
-            {/* Search */}
-            <div className="relative rounded-lg focus-within:ring-2 focus-within:ring-tertiary-fixed">
-              <Search className="absolute left-sm top-1/2 -translate-y-1/2 text-lg text-on-surface-variant h-4 w-4" />
-              <input
-                type="text"
-                className="w-64 rounded-lg border-none bg-surface-container-low py-sm pl-xl pr-md text-body-sm focus:outline-none focus:ring-0"
-                placeholder="Search analytics..."
-              />
-            </div>
+            {/* Logo/Title space if needed */}
           </div>
           <div className="flex items-center gap-lg">
             <Link href="/profile" className="relative h-8 w-8 overflow-hidden rounded-full border border-outline-variant bg-surface-variant block cursor-pointer transition-transform hover:scale-105">

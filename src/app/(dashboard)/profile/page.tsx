@@ -1,18 +1,23 @@
-"use client";
-
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { User, LogOut, Mail, Building, ShieldCheck } from "lucide-react";
+import { User, Mail, Building, ShieldCheck } from "lucide-react";
+import { verifySession } from "@/lib/session";
+import prisma from "@/lib/prisma";
+import LogoutButton from "@/components/LogoutButton";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  const router = useRouter();
+export default async function Page() {
+  const session = await verifySession();
+  if (!session) {
+    redirect("/login");
+  }
 
-  const handleLogout = () => {
-    // Clear the dummy auth cookie
-    document.cookie = "correlab_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    // Redirect to login
-    router.push("/login");
-  };
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId }
+  });
+
+  if (!user) {
+    redirect("/login");
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-lg">
@@ -25,19 +30,13 @@ export default function Page() {
         {/* Left Card: Basic Info */}
         <div className="flex-1 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-[0px_4px_20px_rgba(15,23,42,0.02)]">
           <div className="flex items-center gap-md border-b border-outline-variant pb-lg">
-            <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-outline-variant">
-              <Image
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4twhYW4wD_CzUZcp-FhSEHNbrptf7-kFvdUtKtQ_o0iOlRgQxySMaOzKIQzDvaGEcnrZ5sslW1Qyl3w2M4oYPCKs0tcKIT1wGZU5pxxODJocmk19oKhK5Zh-LubdXFciqvp_GzvO_h9hbYh78ALHtggclFrXFo2MyRQBT0deK3clSEA7X71H2K_KTi0DE-RkrqYdkm_5He3s0AZLiGTeMs4Wb-OpkS-xTTyPOYoD5MygPY4GKCJrc1ivWQ9Fzs8rK1eb4NF0W7R8q"
-                alt="User profile"
-                fill
-                className="object-cover"
-                unoptimized
-              />
+            <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-outline-variant bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed font-headline-lg text-2xl uppercase">
+              {user.name.charAt(0)}
             </div>
             <div>
-              <h3 className="font-headline-md text-headline-md text-on-background">Dr. Jane Data</h3>
+              <h3 className="font-headline-md text-headline-md text-on-background">{user.name}</h3>
               <p className="text-body-sm text-on-surface-variant flex items-center gap-xs mt-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Enterprise Admin
+                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Standard User
               </p>
             </div>
           </div>
@@ -49,7 +48,7 @@ export default function Page() {
               </div>
               <div>
                 <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Email Address</p>
-                <p className="font-body-md text-on-background">jane.data@company.com</p>
+                <p className="font-body-md text-on-background">{user.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-md">
@@ -58,7 +57,7 @@ export default function Page() {
               </div>
               <div>
                 <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Organization</p>
-                <p className="font-body-md text-on-background">Acme Analytics Corp</p>
+                <p className="font-body-md text-on-background">CorreLab User</p>
               </div>
             </div>
             <div className="flex items-center gap-md">
@@ -67,7 +66,7 @@ export default function Page() {
               </div>
               <div>
                 <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Role</p>
-                <p className="font-body-md text-on-background">Lead Data Scientist</p>
+                <p className="font-body-md text-on-background">Analyst</p>
               </div>
             </div>
           </div>
@@ -80,13 +79,7 @@ export default function Page() {
             <p className="text-body-sm text-on-surface-variant mb-lg">
               To fully exit your secure analytical session, please log out below.
             </p>
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-error-container py-md font-title-sm text-title-sm text-on-error-container transition-colors hover:bg-error hover:text-on-error"
-            >
-              <LogOut className="h-5 w-5" />
-              Logout
-            </button>
+            <LogoutButton />
           </div>
         </div>
       </div>

@@ -1,55 +1,70 @@
 "use server";
 
+import { verifySession } from "@/lib/session";
 import prisma from "@/lib/prisma";
-import { generateFileHash } from "@/lib/utils";
+import crypto from "crypto";
 
-/**
- * Uploads and processes a new dataset analysis.
- * 
- * Flow:
- * 1. Reads the incoming file and generates an MD5 hash.
- * 2. Checks the Prisma database to see if the hash already exists.
- * 3. If exists, returns the cached result.
- * 4. If new, (eventually) forwards to Python Microservice.
- */
-export async function processAnalysisAction(formData: FormData) {
+export async function executeAndSaveAnalysis(
+  datasetName: string, 
+  method: string, 
+  dataset: any[], 
+  target_column: string
+) {
   try {
-    const file = formData.get("file") as File | null;
-    
-    if (!file) {
-      throw new Error("No file provided");
+    // 1. Verify Auth Session
+    const session = await verifySession();
+    if (!session || !session.userId) {
+      return { success: false, error: "Sesi telah habis. Silakan login kembali." };
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    // 1. Generate hash
-    const fileHash = generateFileHash(buffer);
-    
-    // 2. Check Database via Prisma (Model)
-    // const existingAnalysis = await prisma.analysisHistory.findUnique({
-    //   where: { datasetHash: fileHash }
-    // });
-    
-    // if (existingAnalysis) {
-    //   return { success: true, cached: true, data: existingAnalysis };
-    // }
+    // 2. Generate Hash untuk mencegah proses ulang data yang sama
+    const hashPayload = JSON.stringify({ method, target_column, dataset_sample: dataset.slice(0, 10), v: "2.0" });
+    const fileHash = crypto.createHash("md5").update(session.userId + hashPayload).digest("hex");
 
-    // 3. (TODO) Forward to Python Microservice
-    // const pythonResponse = await fetch('http://python-service/analyze', ...);
+    // 3. Cek Database Prisma
+    const existing = await prisma.analysisHistory.findUnique({ where: { fileHash } });
+    if (existing) {
+      console.log("Menggunakan hasil cache dari database...");
+      return { success: true, analysisId: existing.id, ...JSON.parse(existing.resultsJson) };
+    }
+
+    // 4. Memanggil Python Engine
+    const pythonUrl = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000/analyze';
+    console.log(`Mengirim data ke Python dengan metode: ${method}...`);
     
-    // 4. Save to DB
-    // await prisma.analysisHistory.create(...)
+    const response = await fetch(pythonUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        method, 
+        data: dataset,
+        target_column
+      }),
+    });
 
-    return { 
-      success: true, 
-      cached: false, 
-      hash: fileHash, 
-      message: "File ready for processing." 
-    };
+    if (!response.ok) {
+      throw new Error(`Python API Error: ${response.status}`);
+    }
 
-  } catch (error) {
-    console.error("Error processing analysis:", error);
-    return { success: false, error: "Failed to process analysis." };
+    const result = await response.json();
+
+    // 5. Menyimpan hasil ke Database
+    const newRecord = await prisma.analysisHistory.create({
+      data: {
+        userId: session.userId,
+        datasetName: datasetName || "Untitled Dataset",
+        fileHash: fileHash,
+        analysisMethod: method,
+        resultsJson: JSON.stringify(result),
+      }
+    });
+
+    return { success: true, analysisId: newRecord.id, ...result };
+
+  } catch (error: any) {
+    console.error("Gagal mengeksekusi analisis:", error);
+    return { success: false, error: error.message || "Gagal menghubungi mesin analitik Python" };
   }
 }

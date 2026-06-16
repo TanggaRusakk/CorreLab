@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const hasAuthCookie = request.cookies.has('correlab_auth');
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register');
+  const hasAuthCookie = request.cookies.has('correlab_session');
 
   if (!hasAuthCookie && !isAuthPage) {
     return NextResponse.redirect(new URL('/login', request.url));

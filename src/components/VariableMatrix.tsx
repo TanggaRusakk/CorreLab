@@ -1,37 +1,18 @@
 import type { VariableInfo } from "@/types";
 
-const variables: VariableInfo[] = [
-  {
-    name: "revenue",
-    type: "float64",
-    mean: "54,231.40",
-    stdDev: "12,405.32",
-    missing: "0.3%",
-  },
-  {
-    name: "customer_count",
-    type: "int64",
-    mean: "1,842",
-    stdDev: "467.21",
-    missing: "0.0%",
-  },
-  {
-    name: "churn_rate",
-    type: "float64",
-    mean: "0.042",
-    stdDev: "0.018",
-    missing: "1.2%",
-  },
-  {
-    name: "avg_order_value",
-    type: "float64",
-    mean: "89.54",
-    stdDev: "23.11",
-    missing: "0.8%",
-  },
-];
+interface Props {
+  variables: VariableInfo[];
+}
 
-export default function VariableMatrix() {
+export default function VariableMatrix({ variables = [] }: Props) {
+  if (!variables || variables.length === 0) {
+    return (
+      <div className="rounded-lg border border-[#E2E8F0] bg-white p-5 flex items-center justify-center">
+        <p className="text-sm text-slate-500">No variable data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border border-[#E2E8F0] bg-white p-5">
       <div className="flex items-center justify-between">

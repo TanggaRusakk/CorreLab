@@ -1,6 +1,17 @@
 import DatasetTable from "@/components/DatasetTable";
+import { verifySession } from "@/lib/session";
+import prisma from "@/lib/prisma";
+import { redirect } from "next/navigation";
 
-export default function Page() {
+export default async function Page() {
+  const session = await verifySession();
+  if (!session) redirect("/login");
+
+  const history = await prisma.analysisHistory.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "desc" }
+  });
+
   return (
     <div className="space-y-lg">
       <div className="mb-lg">
@@ -12,7 +23,7 @@ export default function Page() {
         </p>
       </div>
       
-      <DatasetTable />
+      <DatasetTable data={history} />
     </div>
   );
 }
