@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/models/PrismaClient";
+import prisma from "@/lib/prisma";
 import { generateFileHash } from "@/lib/utils";
 
 /**
