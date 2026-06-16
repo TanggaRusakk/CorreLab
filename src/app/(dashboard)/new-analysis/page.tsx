@@ -4,6 +4,7 @@ import { useState } from "react";
 import FileUploadZone from "@/components/FileUploadZone";
 import ModelConfigPanel from "@/components/ModelConfigPanel";
 import { executeAndSaveAnalysis } from "@/actions/analysis";
+import AlertError from "@/components/ui/AlertError";
 
 import { useRouter } from "next/navigation";
 
@@ -14,14 +15,16 @@ export default function Page() {
   const [method, setMethod] = useState("Linear Regression");
   const [targetColumn, setTargetColumn] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleRunAnalysis = async () => {
+    setErrorMsg("");
     if (dataset.length === 0) {
-      alert("Please upload a dataset first.");
+      setErrorMsg("Please upload a dataset first.");
       return;
     }
     if (!targetColumn) {
-      alert("Please specify the Target (Y) column.");
+      setErrorMsg("Please specify the Target (Y) column.");
       return;
     }
 
@@ -34,15 +37,15 @@ export default function Page() {
         router.push(`/results/${res.analysisId}`);
       } else {
         if (res.error === "Sesi telah habis. Silakan login kembali." || res.error?.includes("Unauthorized")) {
-          alert("Silakan login terlebih dahulu untuk menjalankan analisis.");
-          router.push("/login");
+          setErrorMsg("Silakan login terlebih dahulu untuk menjalankan analisis.");
+          setTimeout(() => router.push("/login"), 2000);
         } else {
-          alert(res.detail || res.error || res.message || "An error occurred");
+          setErrorMsg(res.detail || res.error || res.message || "An error occurred");
           setIsAnalyzing(false); // Reset if error
         }
       }
     } catch (error: any) {
-      alert(error.message);
+      setErrorMsg(error.message);
       setIsAnalyzing(false);
     }
   };
@@ -58,6 +61,8 @@ export default function Page() {
         </p>
       </div>
       
+      <AlertError message={errorMsg} />
+
       <div className="grid grid-cols-3 gap-xl">
         {/* Data Input Area */}
         <div className="col-span-2 space-y-lg">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Loader2, User } from "lucide-react";
 import { loginAction, registerAction } from "@/actions/auth";
+import AlertError from "@/components/ui/AlertError";
 
 export default function Page() {
   const router = useRouter();
@@ -58,11 +59,7 @@ export default function Page() {
         {mode === "signin" ? "Welcome back" : "Create an account"}
       </h3>
 
-      {errorMsg && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg border border-red-200">
-          {errorMsg}
-        </div>
-      )}
+      <AlertError message={errorMsg} />
 
       <form className="space-y-4" onSubmit={handleAuthSubmit}>
         {mode === "signup" && (

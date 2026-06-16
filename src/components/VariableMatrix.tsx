@@ -19,12 +19,6 @@ export default function VariableMatrix({ variables = [] }: Props) {
         <h3 className="text-sm font-semibold text-slate-900">
           Variable Matrix
         </h3>
-        <button
-          type="button"
-          className="text-xs font-medium text-[#38BDF8] hover:underline"
-        >
-          View Full Table
-        </button>
       </div>
 
       <div className="mt-3 overflow-x-auto">

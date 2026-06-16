@@ -3,6 +3,7 @@
 import { useCallback, useState, useRef } from "react";
 import { Upload, Table, CheckCircle2 } from "lucide-react";
 import Papa from "papaparse";
+import AlertError from "@/components/ui/AlertError";
 
 interface Props {
   onDataParsed: (data: any[], fileName: string) => void;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function FileUploadZone({ onDataParsed, fileName }: Props) {
   const [isDragging, setIsDragging] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -26,6 +28,7 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    setErrorMsg("");
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
@@ -40,12 +43,13 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
           }
         });
       } else {
-        alert("Please upload a CSV file");
+        setErrorMsg("Format file tidak didukung. Harap unggah file .csv");
       }
     }
   }, [onDataParsed]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMsg("");
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (file.name.endsWith('.csv')) {
@@ -59,7 +63,7 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
           }
         });
       } else {
-        alert("Please upload a CSV file");
+        setErrorMsg("Format file tidak didukung. Harap unggah file .csv");
       }
     }
   }, [onDataParsed]);
@@ -102,6 +106,10 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
         </>
       )}
       
+      <div className="mb-4">
+        <AlertError message={errorMsg} />
+      </div>
+
       <div className="flex gap-md">
         <input 
           type="file" 

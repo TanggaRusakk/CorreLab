@@ -45,7 +45,13 @@ export async function executeAndSaveAnalysis(
     });
 
     if (!response.ok) {
-      throw new Error(`Python API Error: ${response.status}`);
+      let errorMessage = `Python API Error: ${response.status}`;
+      try {
+        const errRes = await response.json();
+        if (errRes.detail) errorMessage = errRes.detail;
+        else if (errRes.message) errorMessage = errRes.message;
+      } catch (e) {}
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
