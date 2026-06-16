@@ -3,6 +3,7 @@ import MetricCard from "@/components/ui/MetricCard";
 import DynamicChart from "@/components/DynamicChart";
 import FeatureImportanceChart from "@/components/FeatureImportanceChart";
 import ConfusionMatrix from "@/components/ConfusionMatrix";
+import TimeSeriesChart from "@/components/TimeSeriesChart";
 import KeyInsights from "@/components/KeyInsights";
 import VariableMatrix from "@/components/VariableMatrix";
 import prisma from "@/lib/prisma";
@@ -50,6 +51,9 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   let confusionMatrix: number[][] = [];
   let featureImportance: {feature: string, importance: number}[] = [];
   let classes: any[] = [];
+  let historicalData: any[] = [];
+  let forecastData: any[] = [];
+  let trendDirection = "N/A";
 
   try {
     const results = JSON.parse(analysis.resultsJson);
@@ -71,11 +75,16 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     if (results.confusion_matrix) confusionMatrix = results.confusion_matrix;
     if (results.feature_importance) featureImportance = results.feature_importance;
     if (results.classes) classes = results.classes;
+    if (results.historical_data) historicalData = results.historical_data;
+    if (results.forecast_data) forecastData = results.forecast_data;
+    if (results.trend_direction) trendDirection = results.trend_direction;
   } catch (e) {
     // Parsing error
   }
 
   const isClassification = analysis.analysisMethod === "Classification";
+  const isTimeSeries = analysis.analysisMethod === "Time Series";
+  const isPredictive = analysis.analysisMethod === "Predictive";
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -96,52 +105,38 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
       {/* Metric Cards */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title={isClassification ? "Accuracy" : "R-Squared (R²)"}
-          value={isClassification ? accuracy : rSquared}
-          change=""
-          changeType="neutral"
-          icon={<BarChart3 className="h-4 w-4" />}
-        />
-        {!isClassification && (
+        {isClassification ? (
+          <MetricCard title="Accuracy" value={accuracy} change="" changeType="neutral" icon={<BarChart3 className="h-4 w-4" />} />
+        ) : isTimeSeries ? (
+          <MetricCard title="Historical Data" value={`${historicalData.length} steps`} change="" changeType="neutral" icon={<BarChart3 className="h-4 w-4" />} />
+        ) : (
+          <MetricCard title="R-Squared (R²)" value={rSquared} change="" changeType="neutral" icon={<BarChart3 className="h-4 w-4" />} />
+        )}
+
+        {isPredictive && (
           <>
-            <MetricCard
-              title="Slope (Coefficient)"
-              value={slope}
-              change=""
-              changeType="neutral"
-              icon={<TrendingUp className="h-4 w-4" />}
-            />
-            <MetricCard
-              title="Intercept"
-              value={intercept}
-              change=""
-              changeType="neutral"
-              icon={<MinusSquare className="h-4 w-4" />}
-            />
+            <MetricCard title="Slope (Coefficient)" value={slope} change="" changeType="neutral" icon={<TrendingUp className="h-4 w-4" />} />
+            <MetricCard title="Intercept" value={intercept} change="" changeType="neutral" icon={<MinusSquare className="h-4 w-4" />} />
           </>
         )}
+
         {isClassification && (
           <>
-            <MetricCard
-               title="Features Analysed"
-               value={featureImportance.length.toString()}
-               change=""
-               changeType="neutral"
-               icon={<Hash className="h-4 w-4" />}
-            />
-            <MetricCard
-               title="Target Classes"
-               value={classes.length.toString()}
-               change=""
-               changeType="neutral"
-               icon={<GitBranch className="h-4 w-4" />}
-            />
+            <MetricCard title="Features Analysed" value={featureImportance.length.toString()} change="" changeType="neutral" icon={<Hash className="h-4 w-4" />} />
+            <MetricCard title="Target Classes" value={classes.length.toString()} change="" changeType="neutral" icon={<GitBranch className="h-4 w-4" />} />
           </>
         )}
+
+        {isTimeSeries && (
+          <>
+            <MetricCard title="Forecast Horizon" value={`${forecastData.length} steps`} change="" changeType="neutral" icon={<TrendingUp className="h-4 w-4" />} />
+            <MetricCard title="Overall Trend" value={trendDirection} change="" changeType={trendDirection === "Up" ? "positive" : "negative"} icon={<Activity className="h-4 w-4" />} />
+          </>
+        )}
+
         <MetricCard
           title="Algorithm Used"
-          value={analysis.analysisMethod === "Predictive" ? "Linear Regression" : analysis.analysisMethod}
+          value={isPredictive ? "Linear Regression" : isTimeSeries ? "Exponential Smoothing" : analysis.analysisMethod}
           change="Completed"
           changeType="positive"
           icon={<Cpu className="h-4 w-4" />}
@@ -161,6 +156,20 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             <p className="text-xs text-slate-500 mb-4">Actual vs Predicted values (Heatmap).</p>
             <ConfusionMatrix matrix={confusionMatrix} classes={classes} />
           </div>
+        </div>
+      ) : isTimeSeries ? (
+        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">
+                Time Series Forecast
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Historical data points alongside a 10-step forward prediction using Holt's Linear Trend.
+              </p>
+            </div>
+          </div>
+          <TimeSeriesChart historicalData={historicalData} forecastData={forecastData} />
         </div>
       ) : (
         <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-5">
@@ -211,6 +220,21 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                     </p>
                   </li>
                 )}
+              </>
+            ) : isTimeSeries ? (
+              <>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    Based on {historicalData.length} historical records, the model forecasts a <strong>{trendDirection}ward</strong> trajectory.
+                  </p>
+                </li>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    Using Holt's Exponential Smoothing, we projected {forecastData.length} future time steps.
+                  </p>
+                </li>
               </>
             ) : (
               <>
