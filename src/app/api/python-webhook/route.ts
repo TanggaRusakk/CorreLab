@@ -9,9 +9,11 @@ export async function POST(req: Request) {
     const analysis = await prisma.analysisHistory.update({
       where: { id: data.analysisId },
       data: {
-        status: 'COMPLETED',
-        results: data.results,
-        modelUsed: data.modelUsed
+        resultsJson: JSON.stringify({
+          status: 'COMPLETED',
+          results: data.results,
+          modelUsed: data.modelUsed
+        })
       }
     });
     
