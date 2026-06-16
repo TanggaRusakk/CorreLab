@@ -43,7 +43,7 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
           }
         });
       } else {
-        setErrorMsg("Format file tidak didukung. Harap unggah file .csv");
+        setErrorMsg("Unsupported file format. Please upload a .csv file.");
       }
     }
   }, [onDataParsed]);
@@ -63,7 +63,7 @@ export default function FileUploadZone({ onDataParsed, fileName }: Props) {
           }
         });
       } else {
-        setErrorMsg("Format file tidak didukung. Harap unggah file .csv");
+        setErrorMsg("Unsupported file format. Please upload a .csv file.");
       }
     }
   }, [onDataParsed]);

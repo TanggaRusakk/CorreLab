@@ -36,8 +36,8 @@ export default function Page() {
         // Pindah ke halaman hasil yang lebih lengkap!
         router.push(`/results/${res.analysisId}`);
       } else {
-        if (res.error === "Sesi telah habis. Silakan login kembali." || res.error?.includes("Unauthorized")) {
-          setErrorMsg("Silakan login terlebih dahulu untuk menjalankan analisis.");
+        if (res.error === "Session expired. Please log in again." || res.error?.includes("Unauthorized")) {
+          setErrorMsg("Please log in first to run the analysis.");
           setTimeout(() => router.push("/login"), 2000);
         } else {
           setErrorMsg(res.detail || res.error || res.message || "An error occurred");

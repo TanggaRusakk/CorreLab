@@ -11,12 +11,12 @@ export async function registerAction(data: FormData) {
     const password = data.get("password") as string;
 
     if (!name || !email || !password) {
-      return { success: false, error: "Tolong isi semua kolom." };
+      return { success: false, error: "Please fill in all fields." };
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return { success: false, error: "Email sudah terdaftar." };
+      return { success: false, error: "Email is already registered." };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,7 +32,7 @@ export async function registerAction(data: FormData) {
     await createSession(user.id);
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: "Gagal membuat akun." };
+    return { success: false, error: "Failed to create an account." };
   }
 }
 
@@ -42,23 +42,23 @@ export async function loginAction(data: FormData) {
     const password = data.get("password") as string;
 
     if (!email || !password) {
-      return { success: false, error: "Tolong masukkan email dan password." };
+      return { success: false, error: "Please enter your email and password." };
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return { success: false, error: "Email atau password salah." };
+      return { success: false, error: "Invalid email or password." };
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return { success: false, error: "Email atau password salah." };
+      return { success: false, error: "Invalid email or password." };
     }
 
     await createSession(user.id);
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: "Gagal login." };
+    return { success: false, error: "Failed to login." };
   }
 }
 

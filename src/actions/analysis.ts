@@ -14,7 +14,7 @@ export async function executeAndSaveAnalysis(
     // 1. Verify Auth Session
     const session = await verifySession();
     if (!session || !session.userId) {
-      return { success: false, error: "Sesi telah habis. Silakan login kembali." };
+      return { success: false, error: "Session expired. Please log in again." };
     }
 
     // 2. Generate Hash untuk mencegah proses ulang data yang sama
@@ -24,13 +24,13 @@ export async function executeAndSaveAnalysis(
     // 3. Cek Database Prisma
     const existing = await prisma.analysisHistory.findUnique({ where: { fileHash } });
     if (existing) {
-      console.log("Menggunakan hasil cache dari database...");
+      console.log("Using cached results from database...");
       return { success: true, analysisId: existing.id, ...JSON.parse(existing.resultsJson) };
     }
 
     // 4. Memanggil Python Engine
     const pythonUrl = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000/analyze';
-    console.log(`Mengirim data ke Python dengan metode: ${method}...`);
+    console.log(`Sending data to Python with method: ${method}...`);
     
     const response = await fetch(pythonUrl, {
       method: 'POST',
@@ -70,7 +70,7 @@ export async function executeAndSaveAnalysis(
     return { success: true, analysisId: newRecord.id, ...result };
 
   } catch (error: any) {
-    console.error("Gagal mengeksekusi analisis:", error);
-    return { success: false, error: error.message || "Gagal menghubungi mesin analitik Python" };
+    console.error("Failed to execute analysis:", error);
+    return { success: false, error: error.message || "Failed to contact Python analytics engine" };
   }
 }
