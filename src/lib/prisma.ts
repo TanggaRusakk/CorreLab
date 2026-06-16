@@ -2,20 +2,18 @@ import { PrismaClient } from '../generated/prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL;
-  const pool = new Pool({ connectionString });
-  const adapter = new PrismaPg(pool);
+// Ambil URL dari .env
+const connectionString = `${process.env.DIRECT_URL}`;
 
-  return new PrismaClient({ adapter });
-};
+// Buat connection pool menggunakan pg
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
 
-declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
-}
+// Singleton pattern khusus Next.js agar tidak kebanyakan koneksi saat Hot-Reload
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({ adapter });
 
-export default prisma;
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
