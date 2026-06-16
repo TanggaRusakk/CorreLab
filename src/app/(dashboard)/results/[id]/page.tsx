@@ -1,6 +1,8 @@
 import { Hash, GitBranch, BarChart3, TrendingUp, Cpu, Activity, MinusSquare } from "lucide-react";
 import MetricCard from "@/components/ui/MetricCard";
 import DynamicChart from "@/components/DynamicChart";
+import FeatureImportanceChart from "@/components/FeatureImportanceChart";
+import ConfusionMatrix from "@/components/ConfusionMatrix";
 import KeyInsights from "@/components/KeyInsights";
 import VariableMatrix from "@/components/VariableMatrix";
 import prisma from "@/lib/prisma";
@@ -38,12 +40,16 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   let rSquared = "N/A";
   let slope = "N/A";
   let intercept = "N/A";
-  let variablesInfo = [];
-  let chartData = [];
+  let accuracy = "N/A";
+  let variablesInfo: any[] = [];
+  let chartData: any[] = [];
   let xKey = "X";
   let yKey = "Y";
   let numericSlope = 0;
   let numericIntercept = 0;
+  let confusionMatrix: number[][] = [];
+  let featureImportance: {feature: string, importance: number}[] = [];
+  let classes: any[] = [];
 
   try {
     const results = JSON.parse(analysis.resultsJson);
@@ -60,9 +66,16 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     if (results.chart_data) chartData = results.chart_data;
     if (results.feature_used) xKey = results.feature_used;
     if (results.target_used) yKey = results.target_used;
+    
+    if (results.accuracy !== undefined) accuracy = results.accuracy.toString();
+    if (results.confusion_matrix) confusionMatrix = results.confusion_matrix;
+    if (results.feature_importance) featureImportance = results.feature_importance;
+    if (results.classes) classes = results.classes;
   } catch (e) {
     // Parsing error
   }
+
+  const isClassification = analysis.analysisMethod === "Classification";
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -84,26 +97,48 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       {/* Metric Cards */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="R-Squared (R²)"
-          value={rSquared}
+          title={isClassification ? "Accuracy" : "R-Squared (R²)"}
+          value={isClassification ? accuracy : rSquared}
           change=""
           changeType="neutral"
           icon={<BarChart3 className="h-4 w-4" />}
         />
-        <MetricCard
-          title="Slope (Coefficient)"
-          value={slope}
-          change=""
-          changeType="neutral"
-          icon={<TrendingUp className="h-4 w-4" />}
-        />
-        <MetricCard
-          title="Intercept"
-          value={intercept}
-          change=""
-          changeType="neutral"
-          icon={<MinusSquare className="h-4 w-4" />}
-        />
+        {!isClassification && (
+          <>
+            <MetricCard
+              title="Slope (Coefficient)"
+              value={slope}
+              change=""
+              changeType="neutral"
+              icon={<TrendingUp className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Intercept"
+              value={intercept}
+              change=""
+              changeType="neutral"
+              icon={<MinusSquare className="h-4 w-4" />}
+            />
+          </>
+        )}
+        {isClassification && (
+          <>
+            <MetricCard
+               title="Features Analysed"
+               value={featureImportance.length.toString()}
+               change=""
+               changeType="neutral"
+               icon={<Hash className="h-4 w-4" />}
+            />
+            <MetricCard
+               title="Target Classes"
+               value={classes.length.toString()}
+               change=""
+               changeType="neutral"
+               icon={<GitBranch className="h-4 w-4" />}
+            />
+          </>
+        )}
         <MetricCard
           title="Algorithm Used"
           value={analysis.analysisMethod === "Predictive" ? "Linear Regression" : analysis.analysisMethod}
@@ -114,28 +149,43 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       </div>
 
       {/* Chart Section */}
-      <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              Regression Line Visualization
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Visualizing the relationship between your target and feature variables.
-            </p>
+      {isClassification ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="rounded-lg border border-[#E2E8F0] bg-white p-5">
+            <h2 className="text-sm font-semibold text-slate-900 mb-0.5">Feature Importance</h2>
+            <p className="text-xs text-slate-500 mb-4">Which variables contributed most to the model's decisions.</p>
+            <FeatureImportanceChart data={featureImportance} />
           </div>
-          <select className="rounded-md border border-[#E2E8F0] bg-white px-3 py-1.5 text-xs text-slate-600 outline-none focus:border-[#38BDF8]">
-            <option>Standard View</option>
-          </select>
+          <div className="rounded-lg border border-[#E2E8F0] bg-white p-5">
+            <h2 className="text-sm font-semibold text-slate-900 mb-0.5">Confusion Matrix</h2>
+            <p className="text-xs text-slate-500 mb-4">Actual vs Predicted values (Heatmap).</p>
+            <ConfusionMatrix matrix={confusionMatrix} classes={classes} />
+          </div>
         </div>
-        <DynamicChart 
-          data={chartData}
-          xKey={xKey}
-          yKey={yKey}
-          slope={numericSlope}
-          intercept={numericIntercept}
-        />
-      </div>
+      ) : (
+        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">
+                Regression Line Visualization
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Visualizing the relationship between your target and feature variables.
+              </p>
+            </div>
+            <select className="rounded-md border border-[#E2E8F0] bg-white px-3 py-1.5 text-xs text-slate-600 outline-none focus:border-[#38BDF8]">
+              <option>Standard View</option>
+            </select>
+          </div>
+          <DynamicChart 
+            data={chartData}
+            xKey={xKey}
+            yKey={yKey}
+            slope={numericSlope}
+            intercept={numericIntercept}
+          />
+        </div>
+      )}
 
       {/* Bottom Row: Key Insights + Variable Matrix */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -145,24 +195,45 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             <h3 className="font-title-md text-title-md text-on-background">Automated Insights</h3>
           </div>
           <ul className="space-y-sm">
-            <li className="flex items-start gap-sm">
-              <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
-              <p className="text-body-sm text-on-surface-variant">
-                The Linear Regression model yielded an R-Squared of <strong>{rSquared}</strong>.
-              </p>
-            </li>
-            <li className="flex items-start gap-sm">
-              <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
-              <p className="text-body-sm text-on-surface-variant">
-                For every 1 unit increase in the feature variable, the target variable changes by exactly <strong>{slope}</strong> units.
-              </p>
-            </li>
-            <li className="flex items-start gap-sm">
-              <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
-              <p className="text-body-sm text-on-surface-variant">
-                The baseline (intercept) when the feature is 0 is <strong>{intercept}</strong>.
-              </p>
-            </li>
+            {isClassification ? (
+              <>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    The Random Forest Classification model achieved an overall accuracy of <strong>{(parseFloat(accuracy) * 100).toFixed(1)}%</strong>.
+                  </p>
+                </li>
+                {featureImportance.length > 0 && (
+                  <li className="flex items-start gap-sm">
+                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                    <p className="text-body-sm text-on-surface-variant">
+                      The most important feature in predicting the class was <strong>{[...featureImportance].sort((a,b)=>b.importance - a.importance)[0]?.feature}</strong>.
+                    </p>
+                  </li>
+                )}
+              </>
+            ) : (
+              <>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    The Linear Regression model yielded an R-Squared of <strong>{rSquared}</strong>.
+                  </p>
+                </li>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    For every 1 unit increase in the feature variable, the target variable changes by exactly <strong>{slope}</strong> units.
+                  </p>
+                </li>
+                <li className="flex items-start gap-sm">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                  <p className="text-body-sm text-on-surface-variant">
+                    The baseline (intercept) when the feature is 0 is <strong>{intercept}</strong>.
+                  </p>
+                </li>
+              </>
+            )}
           </ul>
         </div>
         <VariableMatrix variables={variablesInfo} />
