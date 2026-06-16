@@ -1,159 +1,165 @@
-"use client";
+import { Search, Filter, Eye, Download, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { useState } from "react";
-import Link from "next/link";
-import { FileText, MoreVertical, Search } from "lucide-react";
-import MethodBadge from "@/components/ui/MethodBadge";
-import type { DatasetEntry } from "@/types";
-
-const mockData: DatasetEntry[] = [
-  {
-    id: "1",
-    fileName: "Q4_Revenue_Forecast.csv",
-    dateProcessed: "Oct 12, 2023",
-    fileSize: "14.2 MB",
-    primaryMethod: "Time-Series",
-  },
-  {
-    id: "2",
-    fileName: "User_Retention_Cohort.xlsx",
-    dateProcessed: "Oct 10, 2023",
-    fileSize: "2.4 MB",
-    primaryMethod: "Survival Analysis",
-  },
-  {
-    id: "3",
-    fileName: "A_B_Test_Results_V2.json",
-    dateProcessed: "Oct 05, 2023",
-    fileSize: "8.1 MB",
-    primaryMethod: "ANOVA",
-  },
-  {
-    id: "4",
-    fileName: "Customer_Segmentation_Raw.csv",
-    dateProcessed: "Sep 28, 2023",
-    fileSize: "45.8 MB",
-    primaryMethod: "Clustering",
-  },
-  {
-    id: "5",
-    fileName: "Pricing_Elasticity_Study.csv",
-    dateProcessed: "Sep 15, 2023",
-    fileSize: "1.2 MB",
-    primaryMethod: "Regression",
-  },
-];
-
-interface DatasetTableProps {
-  searchQuery: string;
-}
-
-export default function DatasetTable({ searchQuery }: DatasetTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
-  const totalEntries = 24;
-
-  const filteredData = mockData.filter((item) =>
-    item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(totalEntries / pageSize);
-  const startEntry = (currentPage - 1) * pageSize + 1;
-  const endEntry = Math.min(currentPage * pageSize, totalEntries);
-
+export default function DatasetTable() {
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white">
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[#E2E8F0]">
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Dataset Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Date Processed
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                File Size
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Primary Method
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#E2E8F0]">
-            {filteredData.map((entry) => (
-              <tr
-                key={entry.id}
-                className="transition-colors hover:bg-slate-50"
-              >
-                <td className="whitespace-nowrap px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-4 w-4 text-slate-400" />
-                    <Link
-                      href={`/results/${entry.id}`}
-                      className="text-sm font-medium text-slate-900 hover:text-[#38BDF8]"
-                    >
-                      {entry.fileName}
-                    </Link>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
-                  {entry.dateProcessed}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
-                  {entry.fileSize}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <MethodBadge method={entry.primaryMethod} />
-                </td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <Link
-                      href={`/results/${entry.id}`}
-                      className="rounded-md border border-[#E2E8F0] px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                    >
-                      View Results
-                    </Link>
-                    <button
-                      type="button"
-                      className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[0px_4px_20px_rgba(15,23,42,0.02)]">
+      {/* Table Actions */}
+      <div className="flex items-center justify-between border-b border-outline-variant bg-surface-container-low/50 p-md">
+        <div className="relative">
+          <Search className="absolute left-sm top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+          <input
+            className="w-64 rounded-md border border-outline-variant bg-surface py-xs pl-xl pr-md text-body-sm focus:outline-none focus:ring-1 focus:ring-tertiary-fixed"
+            placeholder="Filter datasets..."
+            type="text"
+          />
+        </div>
+        <button className="flex items-center gap-xs rounded border border-outline-variant px-sm py-xs text-body-sm text-on-surface-variant transition-colors hover:bg-surface">
+          <Filter className="h-4 w-4" /> Filter
+        </button>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-[#E2E8F0] px-6 py-3">
-        <p className="text-sm text-slate-500">
-          Showing {startEntry} to {endEntry} of {totalEntries} entries
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="rounded-md px-3 py-1.5 text-sm text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-40"
-          >
-            Prev
+      {/* Data Table */}
+      <table className="w-full border-collapse text-left">
+        <thead>
+          <tr className="border-b border-outline-variant bg-surface">
+            <th className="px-lg py-sm font-label-uppercase text-label-uppercase text-on-surface-variant">
+              Dataset Name
+            </th>
+            <th className="px-lg py-sm font-label-uppercase text-label-uppercase text-on-surface-variant">
+              Date
+            </th>
+            <th className="px-lg py-sm font-label-uppercase text-label-uppercase text-on-surface-variant">
+              Model Used
+            </th>
+            <th className="px-lg py-sm font-label-uppercase text-label-uppercase text-on-surface-variant">
+              Status
+            </th>
+            <th className="px-lg py-sm text-right font-label-uppercase text-label-uppercase text-on-surface-variant">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="text-body-sm text-on-background">
+          <tr className="group border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low">
+            <td className="px-lg py-md font-semibold">Q4 Sales Data.csv</td>
+            <td className="px-lg py-md font-code-mono text-on-surface-variant">
+              2023-10-24 09:12
+            </td>
+            <td className="px-lg py-md">Random Forest</td>
+            <td className="px-lg py-md">
+              <span className="inline-flex items-center gap-xs rounded-full border border-outline-variant/30 bg-surface-container px-sm py-[2px] text-[11px] font-semibold text-on-surface">
+                <div className="h-1.5 w-1.5 rounded-full bg-secondary-fixed"></div>{" "}
+                Completed
+              </span>
+            </td>
+            <td className="px-lg py-md text-right opacity-0 transition-opacity group-hover:opacity-100">
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Eye className="h-4 w-4" />
+              </button>
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Download className="h-4 w-4" />
+              </button>
+            </td>
+          </tr>
+          
+          <tr className="group border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low">
+            <td className="px-lg py-md font-semibold">Customer Churn Log.xlsx</td>
+            <td className="px-lg py-md font-code-mono text-on-surface-variant">
+              2023-10-23 14:45
+            </td>
+            <td className="px-lg py-md">XGBoost</td>
+            <td className="px-lg py-md">
+              <span className="inline-flex items-center gap-xs rounded-full border border-outline-variant/30 bg-surface-container px-sm py-[2px] text-[11px] font-semibold text-on-surface">
+                <div className="h-1.5 w-1.5 rounded-full bg-secondary-fixed"></div>{" "}
+                Completed
+              </span>
+            </td>
+            <td className="px-lg py-md text-right opacity-0 transition-opacity group-hover:opacity-100">
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Eye className="h-4 w-4" />
+              </button>
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Download className="h-4 w-4" />
+              </button>
+            </td>
+          </tr>
+
+          <tr className="group border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low">
+            <td className="px-lg py-md font-semibold">Sensor_Readings_EU.csv</td>
+            <td className="px-lg py-md font-code-mono text-on-surface-variant">
+              2023-10-23 10:05
+            </td>
+            <td className="px-lg py-md">Linear Regression</td>
+            <td className="px-lg py-md">
+              <span className="inline-flex items-center gap-xs rounded-full bg-error-container px-sm py-[2px] text-[11px] font-semibold text-on-error-container">
+                <div className="h-1.5 w-1.5 rounded-full bg-error"></div> Failed
+              </span>
+            </td>
+            <td className="px-lg py-md text-right opacity-0 transition-opacity group-hover:opacity-100">
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Eye className="h-4 w-4" />
+              </button>
+            </td>
+          </tr>
+
+          <tr className="group border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low">
+            <td className="px-lg py-md font-semibold">Q3_Marketing_Spend.xlsx</td>
+            <td className="px-lg py-md font-code-mono text-on-surface-variant">
+              2023-10-21 16:20
+            </td>
+            <td className="px-lg py-md">Random Forest</td>
+            <td className="px-lg py-md">
+              <span className="inline-flex items-center gap-xs rounded-full border border-outline-variant/30 bg-surface-container px-sm py-[2px] text-[11px] font-semibold text-on-surface">
+                <div className="h-1.5 w-1.5 rounded-full bg-secondary-fixed"></div>{" "}
+                Completed
+              </span>
+            </td>
+            <td className="px-lg py-md text-right opacity-0 transition-opacity group-hover:opacity-100">
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Eye className="h-4 w-4" />
+              </button>
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Download className="h-4 w-4" />
+              </button>
+            </td>
+          </tr>
+
+          <tr className="group transition-colors hover:bg-surface-container-low">
+            <td className="px-lg py-md font-semibold">User_Engagement_V2.csv</td>
+            <td className="px-lg py-md font-code-mono text-on-surface-variant">
+              2023-10-20 08:30
+            </td>
+            <td className="px-lg py-md">K-Means Clustering</td>
+            <td className="px-lg py-md">
+              <span className="inline-flex items-center gap-xs rounded-full border border-outline-variant/30 bg-surface-container px-sm py-[2px] text-[11px] font-semibold text-on-surface">
+                <div className="h-1.5 w-1.5 rounded-full bg-secondary-fixed"></div>{" "}
+                Completed
+              </span>
+            </td>
+            <td className="px-lg py-md text-right opacity-0 transition-opacity group-hover:opacity-100">
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Eye className="h-4 w-4" />
+              </button>
+              <button className="p-xs text-on-surface-variant hover:text-primary-container">
+                <Download className="h-4 w-4" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Pagination (Static Placeholder) */}
+      <div className="flex items-center justify-end gap-sm border-t border-outline-variant bg-surface-container-lowest p-sm">
+        <span className="mr-md flex items-center gap-1 text-body-sm text-on-surface-variant">
+          Rows per page: 5 <ChevronDown className="h-4 w-4" />
+        </span>
+        <span className="text-body-sm text-on-surface-variant">1-5 of 42</span>
+        <div className="ml-sm flex gap-xs">
+          <button className="cursor-not-allowed p-xs text-outline-variant">
+            <ChevronLeft className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-40"
-          >
-            Next
+          <button className="rounded p-xs text-on-surface-variant hover:bg-surface">
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>

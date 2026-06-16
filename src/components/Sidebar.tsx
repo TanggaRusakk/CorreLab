@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PlusCircle, Clock, User } from "lucide-react";
+import { LayoutDashboard, BarChart2, Clock } from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -12,14 +12,19 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "New Analysis",
-    href: "/new-analysis",
-    icon: <PlusCircle className="h-4 w-4" />,
+    label: "Dashboard",
+    href: "/",
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
-    label: "Dataset History",
+    label: "New Analysis",
+    href: "/new-analysis",
+    icon: <BarChart2 className="h-5 w-5" />,
+  },
+  {
+    label: "History",
     href: "/history",
-    icon: <Clock className="h-4 w-4" />,
+    icon: <Clock className="h-5 w-5" />,
   },
 ];
 
@@ -27,50 +32,42 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-60 flex-col bg-[#0F172A] text-white">
-      {/* Logo */}
-      <div className="px-6 py-6">
-        <h1 className="text-xl font-bold tracking-tight text-white">
+    <aside className="fixed left-0 top-0 z-20 flex h-screen w-sidebar-width flex-col border-r border-outline-variant bg-primary-container py-xl">
+      <div className="mb-xl px-lg">
+        <h1 className="font-display-lg text-display-lg text-on-primary">
           CorreLab
         </h1>
+        <p className="mt-xs text-body-sm text-on-primary-container">
+          Enterprise Analytics
+        </p>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-1 flex-col gap-1 px-3">
+      <nav className="flex-1 space-y-sm">
         {navItems.map((item) => {
+          // Determine if item is active
+          // Note: special case for "/" so it doesn't always match
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`nav-item flex cursor-pointer items-center gap-md px-lg py-md transition-all duration-200 ${
                 isActive
-                  ? "bg-[#38BDF8]/20 text-white"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  ? "border-l-4 border-tertiary-fixed bg-on-primary-fixed-variant/10 text-tertiary-fixed"
+                  : "text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-on-primary"
               }`}
             >
               {item.icon}
-              {item.label}
+              <span className="font-title-sm text-title-sm">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* User Profile */}
-      <div className="border-t border-white/10 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700">
-            <User className="h-4 w-4 text-slate-300" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-white">
-              Dr. E. Anderson
-            </span>
-            <span className="text-xs text-[#38BDF8]">Enterprise Plan</span>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }
