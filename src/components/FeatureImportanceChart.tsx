@@ -31,7 +31,7 @@ export default function FeatureImportanceChart({ data }: FeatureImportanceProps)
             width={120}
           />
           <Tooltip 
-            formatter={(value: number) => [`${(value * 100).toFixed(2)}%`, 'Importance']}
+            formatter={(value: any) => [`${(Number(value) * 100).toFixed(2)}%`, 'Importance']}
             cursor={{ fill: '#F1F5F9' }}
             contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           />
