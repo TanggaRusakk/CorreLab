@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthInput from "@/components/ui/AuthInput";
 import AuthButton from "@/components/ui/AuthButton";
-import SocialButton from "@/components/ui/SocialButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -35,18 +34,6 @@ export default function RegisterPage() {
         <p className="mt-1 text-sm text-slate-500">
           Get started with CorreLab — free for 14 days.
         </p>
-      </div>
-
-      {/* Social Login */}
-      <SocialButton />
-
-      {/* Divider */}
-      <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-[#E2E8F0]" />
-        <span className="text-xs font-medium text-slate-400">
-          OR CONTINUE WITH EMAIL
-        </span>
-        <div className="h-px flex-1 bg-[#E2E8F0]" />
       </div>
 
       {/* Register Form */}

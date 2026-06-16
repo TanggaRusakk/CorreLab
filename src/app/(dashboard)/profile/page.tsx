@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { User, Mail, Building, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck } from "lucide-react";
 import { verifySession } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
@@ -49,24 +49,6 @@ export default async function Page() {
               <div>
                 <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Email Address</p>
                 <p className="font-body-md text-on-background">{user.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant">
-                <Building className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Organization</p>
-                <p className="font-body-md text-on-background">CorreLab User</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant">
-                <User className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-label-uppercase text-[11px] text-on-surface-variant tracking-wider">Role</p>
-                <p className="font-body-md text-on-background">Analyst</p>
               </div>
             </div>
           </div>
