@@ -1,13 +1,47 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+}
+
+// ==========================================
+// MODEL 1: PENGGUNA (USERS)
+// ==========================================
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // Akan di-hash nanti
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relasi: 1 User bisa punya banyak riwayat analisis
+  analyses  AnalysisHistory[]
+
+  // Mengubah nama tabel di database menjadi snake_case agar sesuai standar SQL
+  @@map("users")
+}
+
+// ==========================================
+// MODEL 2: RIWAYAT ANALISIS (ANALYSIS HISTORY)
+// ==========================================
+model AnalysisHistory {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  datasetName    String   @map("dataset_name")
+  fileHash       String   @unique @map("file_hash") // Kunci utama untuk caching/mencegah komputasi ulang
+  analysisMethod String   @map("analysis_method")   // Contoh: "Correlations", "Predictive Modeling"
+  resultsJson    String   @db.Text @map("results_json") // Menyimpan data output dari Python FastAPI
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relasi: Menyambungkan riwayat ini ke User yang mengunggahnya
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("analysis_history")
 }
